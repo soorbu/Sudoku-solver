@@ -3,7 +3,6 @@
 {% load static %}
 
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sudoku Solver</title>
@@ -52,6 +51,7 @@
             text-align: center;
             position: relative;
             border: 1px solid #ddd;
+            background: white;
         }
 
         /* Thick borders for 3x3 blocks */
@@ -86,16 +86,26 @@
             color: #1976d2;
         }
 
+        /* Original values in black, solved values in green */
         .cell-input[readonly] {
-            background: #e8f5e8;
-            color: #2e7d32;
+            background: transparent !important;
             cursor: default;
+            font-weight: bold;
         }
 
         .original-value {
-            background: #fff3e0 !important;
-            color: #333 !important;
-            font-weight: bold;
+            color: #000 !important;
+            font-weight: bold !important;
+        }
+
+        .solved-value {
+            color: #2e7d32 !important;
+            font-weight: bold !important;
+        }
+
+        /* Remove button-like appearance for solved cells */
+        .cell-input[readonly]:focus {
+            background: transparent !important;
         }
 
         .controls {
@@ -204,7 +214,7 @@
                         <input 
                             type="text" 
                             name="cell_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}" 
-                            class="cell-input {% if is_solved and cell %}{% if forloop.parentloop.counter0|stringformat:'s'|add:'_'|add:forloop.counter0|stringformat:'s' in original_cells %}original-value{% endif %}{% endif %}"
+                            class="cell-input {% if is_solved and cell %}{% if forloop.parentloop.counter0|stringformat:'s'|add:'_'|add:forloop.counter0|stringformat:'s' in original_cells %}original-value{% else %}solved-value{% endif %}{% endif %}"
                             maxlength="1" 
                             pattern="[1-9]"
                             value="{% if cell %}{{ cell }}{% endif %}"
