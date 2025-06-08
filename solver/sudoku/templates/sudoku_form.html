@@ -149,7 +149,25 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
         }
+        .explain-btn {
+            background: linear-gradient(45deg, #b136f4, #a42fd3);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(89, 54, 244, 0.3);
+        }
 
+        .explain-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(89, 54, 244, 0.3);
+        }
+        
         .error {
             color: #d32f2f;
             text-align: center;
@@ -233,6 +251,7 @@
                     <button type="button" class="clear-btn" onclick="clearGrid()">🗑️ Clear Grid</button>
                 {% else %}
                     <button type="button" class="clear-btn" onclick="location.href=window.location.pathname + '?new=1'">🔄 New Puzzle</button>
+                    <a href="{% url 'sudoku_explanation' %}"  class="explain-btn">📝 Explain</a>
                 {% endif %}
             </div>
 

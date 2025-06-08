@@ -209,3 +209,6 @@ def sudoku_view(request):
             context["error"] = f"Error processing puzzle: {str(e)}"
     
     return render(request, "sudoku_form.html", context)
+
+def sudoku_explanation_view(request):
+    return render(request, 'sudoku_explanation.html')

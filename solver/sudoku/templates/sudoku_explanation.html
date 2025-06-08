@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Solver</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #4CAF50;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 5px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            background: #f5f5f5;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border-radius: 8px 8px 0 0;
+            margin-right: 5px;
+        }
+
+        .tab.active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .tab:hover:not(.active) {
+            background: #e8e8e8;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .sudoku-grid {
+            border-collapse: collapse;
+            margin: 0 auto 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .sudoku-grid td {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            position: relative;
+            border: 1px solid #ddd;
+            background: white;
+        }
+
+        .sudoku-grid td:nth-child(3n) {
+            border-right: 3px solid #333;
+        }
+        .sudoku-grid td:first-child {
+            border-left: 3px solid #333;
+        }
+        .sudoku-grid tr:nth-child(3n) td {
+            border-bottom: 3px solid #333;
+        }
+        .sudoku-grid tr:first-child td {
+            border-top: 3px solid #333;
+        }
+
+        .cell-input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            background: transparent;
+            outline: none;
+            color: #333;
+            transition: all 0.2s ease;
+        }
+
+        .cell-input:focus {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .cell-input[readonly] {
+            background: transparent !important;
+            cursor: default;
+            font-weight: bold;
+        }
+
+        .original-value {
+            color: #000 !important;
+            font-weight: bold !important;
+        }
+
+        .solved-value {
+            color: #2e7d32 !important;
+            font-weight: bold !important;
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .solve-btn, .clear-btn {
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .solve-btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .clear-btn {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+        }
+
+        .solve-btn:hover, .clear-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .error {
+            color: #d32f2f;
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: #ffebee;
+            border-radius: 8px;
+            border-left: 4px solid #d32f2f;
+            font-weight: bold;
+        }
+
+        .success {
+            color: #2e7d32;
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f5e8;
+            border-radius: 8px;
+            border-left: 4px solid #2e7d32;
+            font-weight: bold;
+        }
+
+        .instructions {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .explanation-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .algorithm-step {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .sudoku-grid td {
+                width: 35px;
+                height: 35px;
+            }
+            .cell-input {
+                font-size: 16px;
+            }
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧩 Sudoku Solver</h1>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('explanation')">How It Works</button>
+            <button class="tab" onclick="showTab('algorithm')">Algorithm Details</button>
+        </div>
+
+        <!-- Explanation Tab -->
+        <div id="explanation" class="tab-content active">
+            <h2>What is Sudoku?</h2>
+            <p>Sudoku is a logic-based number puzzle where you fill a 9×9 grid with digits 1-9, following these rules:</p>
+            <ul>
+                <li><strong>Each row</strong> must contain all digits 1-9 exactly once</li>
+                <li><strong>Each column</strong> must contain all digits 1-9 exactly once</li>
+                <li><strong>Each 3×3 box</strong> must contain all digits 1-9 exactly once</li>
+            </ul>
+
+            <div class="explanation-section">
+                <h2>How Our Solver Works</h2>
+                <p>Our Sudoku solver uses an intelligent <span class="highlight">backtracking algorithm</span> combined with the <span class="highlight">Minimum Remaining Values (MRV) heuristic</span> to efficiently find solutions.</p>
+                
+                <div class="algorithm-step">
+                    <h3>🔍 Step 1: Validation</h3>
+                    <p>First, we check if the input puzzle is valid by ensuring no duplicates exist in any row, column, or 3×3 box.</p>
+                </div>
+
+                <div class="algorithm-step">
+                    <h3>🎯 Step 2: Smart Cell Selection (MRV)</h3>
+                    <p>Instead of filling cells randomly, we use the MRV heuristic to choose the empty cell with the <strong>fewest possible valid numbers</strong>. This dramatically reduces the search space.</p>
+                </div>
+
+                <div class="algorithm-step">
+                    <h3>🔄 Step 3: Backtracking</h3>
+                    <p>We try each possible number in the selected cell. If it leads to a solution, great! If not, we backtrack and try the next possibility.</p>
+                </div>
+
+                <div class="algorithm-step">
+                    <h3>✅ Step 4: Solution Found</h3>
+                    <p>When all cells are filled following Sudoku rules, we've found the solution!</p>
+                </div>
+            </div>
+
+            <h2>Why This Approach is Efficient</h2>
+            <p>The MRV heuristic makes our solver much faster than naive backtracking because:</p>
+            <ul>
+                <li>It identifies constraints early (cells with only one possibility)</li>
+                <li>It reduces the branching factor in our search tree</li>
+                <li>It often leads to faster detection of invalid states</li>
+            </ul>
+        </div>
+
+        <!-- Algorithm Details Tab -->
+        <div id="algorithm" class="tab-content">
+            <h2>Technical Implementation</h2>
+            
+            <h3>Core Functions</h3>
+            
+            <div class="algorithm-step">
+                <h4>🔍 Validation Functions</h4>
+                <div class="code-block">
+def is_valid_grid(grid):
+    # Check rows, columns, and 3x3 boxes for duplicates
+    # Returns True if puzzle state is valid
+                </div>
+                <p>Ensures the puzzle follows Sudoku rules at any given state.</p>
+            </div>
+
+            <div class="algorithm-step">
+                <h4>🎯 MRV Heuristic</h4>
+                <div class="code-block">
+def find_mrv(grid):
+    # Find empty cell with minimum remaining values
+    # Returns (row, col, possible_values)
+                </div>
+                <p>Selects the most constrained cell to fill next, improving efficiency.</p>
+            </div>
+
+            <div class="algorithm-step">
+                <h4>🔄 Recursive Solver</h4>
+                <div class="code-block">
+def solve(grid):
+    mrv = find_mrv(grid)
+    if mrv is None:
+        return True  # Solved!
+    
+    row, col, candidates = mrv
+    for num in candidates:
+        grid[row][col] = num
+        if solve(grid):
+            return True
+        grid[row][col] = 0  # Backtrack
+    
+    return False
+                </div>
+                <p>The heart of our solver - recursive backtracking with intelligent cell selection.</p>
+            </div>
+
+            <h3>Time Complexity</h3>
+            <p>In the worst case, the algorithm has a time complexity of <strong>O(9^(n²))</strong> where n is the grid size (9). However, the MRV heuristic and constraint propagation significantly reduce the average case performance.</p>
+
+            <h3>Space Complexity</h3>
+            <p>The space complexity is <strong>O(n²)</strong> for storing the grid, plus the recursion stack which can go up to <strong>O(n²)</strong> in the worst case.</p>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // Clear grid functionality
+        function clearGrid() {
+            const inputs = document.querySelectorAll('.cell-input');
+            inputs.forEach(input => {
+                if (!input.readOnly) {
+                    input.value = '';
+                }
+            });
+        }
+
+        // Input validation
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('.cell-input');
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    this.value = this.value.replace(/[^1-9]/g, '');
+                    if (this.value && !isNaN(this.value) && this.value >= 1 && this.value <= 9) {
+                        this.style.transform = 'scale(1.1)';
+                        setTimeout(() => {
+                            this.style.transform = 'scale(1)';
+                        }, 150);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
